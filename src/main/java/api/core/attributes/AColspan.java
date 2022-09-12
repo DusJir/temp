@@ -2,7 +2,7 @@ package api.core.attributes;
 
 public class AColspan extends Attribute {
 
-    public AColspan() {
-        super("colspan");
+    public AColspan(String value) {
+        super("class", value);
     }
 }

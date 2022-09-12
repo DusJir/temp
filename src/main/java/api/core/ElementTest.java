@@ -1,23 +1,26 @@
 package api.core;
 
-import api.core.elements.ElementFactory;
-import api.core.elements.composites.Composite;
 import api.core.elements.Element;
-import api.core.elements.composites.CompositeFactory;
 import org.testng.annotations.Test;
 
 @Test
 public class ElementTest {
 
     public void testTable() {
-        CompositeFactory cf = CompositeFactory.getInstance();
-        ElementFactory ef = ElementFactory.getInstance();
 
-        Element elm = cf.produce("TABLE");
-        System.out.println("<div>");
-        String html = elm.render();
+        ComponentFactory ef = ComponentFactory.getInstance();
+
+//        Element elm = ef.produce("BROOT");
+//        String html = elm.render();
+//        System.out.print(html);
+
+
+        Element selm = ef.produce("BROOT");
+        selm.getChildren().get(1).getChildren().get(0).getChildren().get(2).getChildren().get(0).addChildren(ef.produce("td"));
+        selm.getChildren().get(1).getChildren().get(0).getChildren().get(2).getChildren().get(0).addChildren(ef.produce("td"));
+        selm.getChildren().get(1).getChildren().get(0).getChildren().get(2).getChildren().get(0).addChildren(ef.produce("td"));
+        String html = selm.render();
         System.out.print(html);
-        System.out.println("</div>");
 
 //        Element tbl = new Element("div")
 //                .table()

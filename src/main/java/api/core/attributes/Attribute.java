@@ -1,19 +1,22 @@
 package api.core.attributes;
 
+import api.core.elements.IElement;
 import api.core.elements.Renderable;
 
 import java.util.Objects;
 
 import static api.ReporterUtils.*;
 
-public abstract class Attribute implements Comparable<Attribute>, Renderable {
+public abstract class Attribute implements IElement, Comparable<Attribute>, Renderable {
     private final String key;
-    private String value;
+    private final String value;
 
-    protected Attribute(String key) {
+    protected Attribute(String key, String value) {
         this.key = key;
+        this.value = value;
     }
 
+    @Override
     public String getKey() {
         return key;
     }
@@ -22,9 +25,6 @@ public abstract class Attribute implements Comparable<Attribute>, Renderable {
         return getOrDefault(this.value, EMPTY);
     }
 
-    public void setValue(String value) {
-        this.value = value;
-    }
 
     @Override
     public String render() {

@@ -1,40 +1,47 @@
 package api.core.elements;
 
+import api.core.attributes.AId;
+import api.core.attributes.Attribute;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
-import static api.ReporterUtils.CRLF;
-import static api.ReporterUtils.SPACE;
+import static api.ReporterUtils.*;
 
 public abstract class Element implements IElement {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final String key;
     private Element parent;
-    private final String id;
-    private final Set<Element> children = new LinkedHashSet<>();
-   // private final Set<Attribute> attributes = new LinkedHashSet<>();
+    private final List<Element> children = new LinkedList<>();
+    private final Set<Attribute> attributes = new LinkedHashSet<>();
+
 
     protected Element(String key) {
         this.key = key;
-        this.id = UUID.randomUUID().toString();
+        this.attributes.add(new AId(UUID.randomUUID().toString()));
     }
 
-    public String getId() {
-        return this.id;
+    public Element addChildren(Element... elements) {
+        return addChildren(Arrays.asList(elements));
     }
 
-    protected Element addChildren(Element... elements) {
+    protected Element addChildren(List<Element> elements) {
         for(Element element : elements) {
             element.setParent(this);
             this.children.add(element);
         }
         return this;
+    }
+
+    protected Element addAttributes(Attribute... attributes) {
+        this.attributes.addAll(Arrays.asList(attributes));
+        return this;
+    }
+
+    public Set<Attribute> getAttributes() {
+        return this.attributes;
     }
 
     protected Element setParent(Element parent) {
@@ -63,7 +70,7 @@ public abstract class Element implements IElement {
         return this.parent;
     }
 
-    public Set<Element> getChildren() {
+    public List<Element> getChildren() {
         return this.children;
     }
 
@@ -72,13 +79,20 @@ public abstract class Element implements IElement {
         StringBuilder sb = new StringBuilder();
         sb.append(CRLF).append(indent(this.getDepth())).append(left());
         children.forEach(e -> sb.append(e.render()));
-        String content = isLeaf() ? this.id + right() : CRLF + indent(this.getDepth()) + right();
+        String content = isLeaf() ?  right() : CRLF + indent(this.getDepth()) + right();
+        if (this.key.equals("hr")) {
+            content = EMPTY;
+        }
         sb.append(content);
 
         return sb.toString();
     }
 
-    private String left() { return String.format("<%s>", this.key); }
+    private String left() {
+        StringBuilder sb = new StringBuilder();
+        this.attributes.forEach(e -> sb.append(e.render()));
+        return String.format("<%s%s>", this.key, sb.toString());
+    }
 
     private String right() {
         return String.format("</%s>", this.key);

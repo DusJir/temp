@@ -1,4 +1,4 @@
-package api.core.elements.composites;
+package api.core.composites;
 
 import api.core.elements.Element;
 

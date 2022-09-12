@@ -2,7 +2,7 @@ package api.core.attributes;
 
 public class AHref extends Attribute {
 
-    public AHref() {
-        super("href");
+    public AHref(String value) {
+        super("class", value);
     }
 }

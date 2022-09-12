@@ -2,7 +2,7 @@ package api.core.attributes;
 
 public class ARowspan extends Attribute {
 
-    public ARowspan() {
-        super("rowspan");
+    public ARowspan(String value) {
+        super("class", value);
     }
 }
