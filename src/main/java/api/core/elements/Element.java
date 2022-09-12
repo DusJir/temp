@@ -1,6 +1,5 @@
 package api.core.elements;
 
-import api.core.attributes.AId;
 import api.core.attributes.Attribute;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -13,50 +12,59 @@ import static api.ReporterUtils.*;
 public abstract class Element implements IElement {
     protected final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final String key;
-    private Element parent;
-    private final List<Element> children = new LinkedList<>();
+    private final boolean pair;
+    private IElement parent;
+    private final List<IElement> children = new LinkedList<>();
     private final Set<Attribute> attributes = new LinkedHashSet<>();
 
-
-    protected Element(String key) {
-        this.key = key;
-        this.attributes.add(new AId(UUID.randomUUID().toString()));
+    protected Element(String key, boolean pair) {
+        this(key, pair, Collections.emptyList());
     }
 
-    public Element addChildren(Element... elements) {
-        return addChildren(Arrays.asList(elements));
+    protected Element(String key, boolean pair, List<IElement> elements, Attribute... attributes) {
+        this.key = key.toLowerCase();
+        this.pair = pair;
+        this.children.addAll(elements);
+        this.attributes.addAll(Arrays.asList(attributes));
     }
 
-    protected Element addChildren(List<Element> elements) {
-        for(Element element : elements) {
+    @Override
+    public void addChildren(IElement... elements) {
+        addChildren(Arrays.asList(elements));
+    }
+
+    public void addChildren(List<IElement> elements) {
+        for(IElement element : elements) {
             element.setParent(this);
             this.children.add(element);
         }
-        return this;
     }
 
-    protected Element addAttributes(Attribute... attributes) {
-        this.attributes.addAll(Arrays.asList(attributes));
-        return this;
+    protected void addAttributes(Set<Attribute> attributes) {
+        this.attributes.addAll(attributes);
     }
 
+    @Override
     public Set<Attribute> getAttributes() {
         return this.attributes;
     }
 
-    protected Element setParent(Element parent) {
+    @Override
+    public void setParent(IElement parent) {
         this.parent = parent;
-        return this;
     }
 
+    @Override
     public boolean isLeaf() {
         return this.children.isEmpty();
     }
 
+    @Override
     public boolean isRoot() {
         return this.parent == null;
     }
 
+    @Override
     public int getDepth() {
         return isRoot() ? 1 : getParent().getDepth() + 1;
     }
@@ -66,11 +74,13 @@ public abstract class Element implements IElement {
         return this.key;
     }
 
-    public Element getParent() {
+    @Override
+    public IElement getParent() {
         return this.parent;
     }
 
-    public List<Element> getChildren() {
+    @Override
+    public List<IElement> getChildren() {
         return this.children;
     }
 
@@ -79,11 +89,7 @@ public abstract class Element implements IElement {
         StringBuilder sb = new StringBuilder();
         sb.append(CRLF).append(indent(this.getDepth())).append(left());
         children.forEach(e -> sb.append(e.render()));
-        String content = isLeaf() ?  right() : CRLF + indent(this.getDepth()) + right();
-        if (this.key.equals("hr")) {
-            content = EMPTY;
-        }
-        sb.append(content);
+        sb.append(right());
 
         return sb.toString();
     }
@@ -91,11 +97,16 @@ public abstract class Element implements IElement {
     private String left() {
         StringBuilder sb = new StringBuilder();
         this.attributes.forEach(e -> sb.append(e.render()));
-        return String.format("<%s%s>", this.key, sb.toString());
+        return String.format("<%s%s>", this.key, sb);
     }
 
     private String right() {
-        return String.format("</%s>", this.key);
+        if (!this.pair) {
+            return EMPTY;
+        }
+        return isLeaf() ?
+                String.format("</%s>", this.key) :
+                CRLF + indent(this.getDepth()) + String.format("</%s>", this.key);
     }
 
     public static String indent(int depth, int offset) {
@@ -105,43 +116,6 @@ public abstract class Element implements IElement {
     public static String indent(int depth) {
         return indent(depth, 0);
     }
-
-
-//    public Element header() {
-//        Element element = new Element("thead");
-//        this.setMeAsParentTo(element);
-//        return element;
-//    }
-//
-//    public Element body() {
-//        Element element = new Element("tbody");
-//        this.setMeAsParentTo(element);
-//        return element;
-//    }
-//
-//    public Element footer() {
-//        Element element = new Element("tfoot");
-//        this.setMeAsParentTo(element);
-//        return element;
-//    }
-//
-//    public Element row() {
-//        Element element = new Element("tr");
-//        this.setMeAsParentTo(element);
-//        return element;
-//    }
-//
-//    public Element column() {
-//        Element element = new Element("td");
-//        this.setMeAsParentTo(element);
-//        return element;
-//    }
-//
-//    public Element table() {
-//        Element element = new Element("table");
-//        this.setMeAsParentTo(element);
-//        return element;
-//    }
 
     @Override
     public boolean equals(Object o) {

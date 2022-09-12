@@ -1,22 +1,20 @@
 package api.core.attributes;
 
-import api.core.elements.IElement;
 import api.core.elements.Renderable;
 
 import java.util.Objects;
 
 import static api.ReporterUtils.*;
 
-public abstract class Attribute implements IElement, Comparable<Attribute>, Renderable {
+public class Attribute implements Comparable<Attribute>, Renderable {
     private final String key;
     private final String value;
 
     protected Attribute(String key, String value) {
-        this.key = key;
+        this.key = key.toLowerCase();
         this.value = value;
     }
 
-    @Override
     public String getKey() {
         return key;
     }

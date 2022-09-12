@@ -1,11 +1,17 @@
 package api.core.composites;
 
+import api.core.attributes.Attribute;
 import api.core.elements.Element;
+import api.core.elements.IElement;
 
-public abstract class Composite extends Element {
+import java.util.List;
+import java.util.Set;
 
-    protected Composite(String key, Element... elements) {
-        super(key);
+public class Composite extends Element {
+
+    protected Composite(String key, List<IElement> elements, Set<Attribute> attributes) {
+        super(key, true);
         addChildren(elements);
+        addAttributes(attributes);
     }
 }
