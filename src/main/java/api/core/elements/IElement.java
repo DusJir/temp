@@ -15,4 +15,5 @@ public interface IElement extends Renderable {
     IElement getParent();
     void setParent(IElement parent);
     List<IElement> getChildren();
+    IElement findHandle(String key);
 }

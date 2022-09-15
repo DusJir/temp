@@ -17,16 +17,13 @@ public enum ElementFactory implements IFactory<IElement> {
     TFOOT(() -> new Tag("tfoot", true)),
     TR(() -> new Tag("tr", true)),
     TD(() -> new Tag("td", true)),
-    TH(() -> new Tag("th", true));
+    TH(() -> new Tag("th", true)),
+    VIRTUAL(() -> new Tag("div", true));
 
     private final Supplier<IElement> producer;
 
     ElementFactory(Supplier<IElement> producer) {
         this.producer = producer;
-    }
-
-    public Supplier<IElement> getProducer() {
-        return this.producer;
     }
 
     public IElement get() {

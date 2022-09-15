@@ -2,18 +2,16 @@ package api.core.elements;
 
 import api.core.attributes.Attribute;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 import static api.ReporterUtils.*;
 
 public abstract class Element implements IElement {
-    protected final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final String key;
     private final boolean pair;
     private IElement parent;
+    private boolean isVisible = true;
     private final List<IElement> children = new LinkedList<>();
     private final Set<Attribute> attributes = new LinkedHashSet<>();
 
@@ -85,28 +83,46 @@ public abstract class Element implements IElement {
     }
 
     @Override
+    public IElement findHandle(String key) {
+        if (this.getChildren().isEmpty()) {
+            return null;
+        }
+        return getChildren().stream().filter(f -> f.getKey().equals(key)).findFirst().orElse(null);
+    }
+
+    @Override
     public String render() {
         StringBuilder sb = new StringBuilder();
-        sb.append(CRLF).append(indent(this.getDepth())).append(left());
+        sb.append(left());
         children.forEach(e -> sb.append(e.render()));
         sb.append(right());
-
         return sb.toString();
     }
 
+    protected void setVisible(boolean isVisible) {
+        this.isVisible = isVisible;
+    }
+
+    protected boolean isPair() {
+        return this.pair;
+    }
+
     private String left() {
+        if (!isVisible) {
+            return EMPTY;
+        }
         StringBuilder sb = new StringBuilder();
         this.attributes.forEach(e -> sb.append(e.render()));
-        return String.format("<%s%s>", this.key, sb);
+        return String.format("%s%s<%s%s>", CRLF, indent(this.getDepth()), this.key, sb);
     }
 
     private String right() {
-        if (!this.pair) {
+        if (!this.pair || !isVisible) {
             return EMPTY;
         }
         return isLeaf() ?
                 String.format("</%s>", this.key) :
-                CRLF + indent(this.getDepth()) + String.format("</%s>", this.key);
+                String.format("%s%s</%s>", CRLF, indent(this.getDepth()), this.key);
     }
 
     public static String indent(int depth, int offset) {
@@ -122,7 +138,7 @@ public abstract class Element implements IElement {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Element element = (Element) o;
-        return key.equals(element.key) && Objects.equals(parent, element.parent) && children.equals(element.children);
+        return key.equals(element.key) && Objects.equals(parent, element.parent) && children.size() == element.children.size();
     }
 
     @Override
