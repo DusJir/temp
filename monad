@@ -1,0 +1,162 @@
+
+And here is the whole code:
+
+       
+
+public class ComputationalTry<T> { 
+
+  final private ComputationlResult<T> result;
+ 
+ static public <P> ComputationalTry<P> initComputation(P argument)
+ {
+  return new ComputationalTry<P>(argument);
+ }
+ 
+ private ComputationalTry(T param)
+ {
+  this.result = new ComputationalSuccess<T>(param);
+ }
+ 
+ private ComputationalTry(ComputationlResult<T> result)
+ {
+  this.result= result;
+ } 
+ 
+ private ComputationlResult<T> applyTransformer(T t, ITransformer<T> transformer) {
+  try
+  {
+   return new ComputationalSuccess<T>(transformer.transform(t));
+  }
+  catch (Exception throwable)
+  {
+   return new ComputationalFailure<T, Exception>(throwable);
+  }
+ }
+ 
+ public ComputationalTry<T> bind(ITransformer<T> transformer)
+ {  
+  if (result.isSuccess())
+  {
+   ComputationlResult<T> resultAfterTransf = this.applyTransformer(result.getResult(), transformer);   
+   return new ComputationalTry<T>(resultAfterTransf);
+  }
+  else
+  {   
+   return new ComputationalTry<T>(result);
+  }
+ } 
+ 
+ public ComputationlResult<T> getResult()
+ {
+  return this.result;
+ }
+}
+
+
+public class ComputationalFailure<T, E extends Throwable> implements ComputationlResult<T> {
+ 
+ public ComputationalFailure(E exception)
+ {
+  this.exception = exception;
+ }
+
+  final private E exception;
+ 
+ @Override
+ public T getResult() {
+  return null;
+ }
+
+  @Override
+ public E getError() {
+  return exception;
+ }
+
+  @Override
+ public boolean isSuccess() {
+  return false;
+ }
+ 
+}
+
+
+public class ComputationalSuccess<T> implements ComputationlResult<T> {
+ 
+ public ComputationalSuccess(T result)
+ {
+  this.result = result;
+ }
+ 
+ final private T result;
+
+  @Override
+ public T getResult() {
+  return result;
+ }
+
+  @Override
+ public Throwable getError() {
+  return null;
+ }
+ 
+ @Override
+ public boolean isSuccess() {
+  return true;
+ }
+}
+
+
+public interface ComputationlResult<T> {
+ 
+ T getResult();
+ 
+ <E extends Throwable> E getError();
+ 
+ boolean isSuccess();
+ 
+}
+
+
+public interface ITransformer<T> {
+ 
+ public T transform(T t);
+ 
+}
+
+
+public class Test {
+
+ public static void main(String[] args) {
+  
+  ITransformer<String> t0 = new ITransformer<String>() {
+   @Override
+   public String transform(String t) {
+    //return t + t;
+    throw new RuntimeException("some exception 1");    
+   }
+  };
+
+  ITransformer<String> t1 = new ITransformer<String>() {
+   @Override
+   public String transform(String t) {
+    return "<" + t + ">";
+    //throw new RuntimeException("some exception 2");
+   }
+  };
+  
+  ComputationlResult<String> res = ComputationalTry.initComputation("1").bind(t0).bind(t1).getResult();
+  
+  System.out.println(res);
+  
+  if (res.isSuccess())
+  {
+   System.out.println(res.getResult());
+  }
+  else
+  {
+   System.out.println(res.getError());
+  }
+ }
+}
+       
+ 
